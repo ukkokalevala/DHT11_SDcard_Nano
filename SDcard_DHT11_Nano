@@ -1,0 +1,62 @@
+#include <SPI.h>
+#include <SD.h>
+#include <DHT.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+const int chipSelect = 10;
+unsigned long lastLogTime = 0;
+const long logInterval = 60000;  // 5 minutes or any minutes you wish 
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+  
+  if (!SD.begin(chipSelect)) {
+    Serial.println("SD Card failed!");
+    while (1);  // Halt if SD fails
+  }
+  Serial.println("SD Card ready.");
+}
+
+void loop() {
+  unsigned long currentTime = millis();
+  
+  if (currentTime - lastLogTime >= logInterval) {
+    lastLogTime = currentTime;
+    
+    float temp = dht.readTemperature();
+    float hum = dht.readHumidity();
+    
+    // Debug DHT11
+    if (isnan(temp) || isnan(hum)) {
+      Serial.println("DHT11 error!");
+      return;
+    }
+    Serial.print("Read: Temp="); 
+    Serial.print(temp); 
+    Serial.print("°C, Hum="); 
+    Serial.print(hum); 
+    Serial.println("%");
+
+    // Debug SD Writing
+    File dataFile = SD.open("datalog.txt", FILE_WRITE);
+    if (dataFile) {
+      Serial.println("Writing to SD...");
+      dataFile.print("Time: "); 
+      dataFile.print(currentTime / 1000); 
+      dataFile.print("s | Temp: "); 
+      dataFile.print(temp); 
+      dataFile.print("°C | Hum: "); 
+      dataFile.print(hum); 
+      dataFile.println("%");
+      dataFile.close();
+      Serial.println("Write successful.");
+    } else {
+      Serial.println("SD write failed!");
+    }
+  }
+  delay(1000);  // Prevent watchdog reset
+}
