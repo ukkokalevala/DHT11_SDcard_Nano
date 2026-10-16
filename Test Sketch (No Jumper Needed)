@@ -1,0 +1,43 @@
+#include <SPI.h>
+
+void setup() {
+  Serial.begin(9600);
+  while (!Serial);
+  
+  pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
+  pinMode(11, OUTPUT); // Force MOSI as output
+  pinMode(12, INPUT);  // MISO as input
+  
+  SPI.begin();
+  SPI.setClockDivider(SPI_CLOCK_DIV16);
+  
+  Serial.println("SPI Loopback Test v2");
+  Serial.println("Jumper: pin 11 (MOSI) --> pin 12 (MISO)");
+  Serial.println();
+  
+  byte testValues[] = {0x55, 0xAA, 0x00, 0xFF, 0x12, 0x34};
+  bool allPassed = true;
+  
+  for (int i = 0; i < 6; i++) {
+    byte sent = testValues[i];
+    byte received = SPI.transfer(sent);
+    
+    Serial.print("Sent: 0x");
+    Serial.print(sent, HEX);
+    Serial.print("  Received: 0x");
+    Serial.print(received, HEX);
+    
+    if (sent == received) {
+      Serial.println("  PASS");
+    } else {
+      Serial.println("  FAIL");
+      allPassed = false;
+    }
+  }
+  
+  Serial.println();
+  Serial.println(allPassed ? "SPI pins OK." : "SPI pins damaged OR jumper missing/broken.");
+}
+
+void loop() {}
