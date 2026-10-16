@@ -1,0 +1,27 @@
+// Run This Single Test — It Answers Everything
+//This sketch does not need SPI at all. It just toggles D11 and reads D12:
+
+void setup() {
+  Serial.begin(9600);
+  while (!Serial);
+  pinMode(11, OUTPUT);
+  pinMode(12, INPUT);      // no pull-up
+  Serial.println("=== Digital Pin Test ===");
+  Serial.println("Jumper MUST be between D11 and D12");
+  Serial.println();
+}
+
+void loop() {
+  digitalWrite(11, LOW);
+  delay(20);
+  int lowRead = digitalRead(12);
+  
+  digitalWrite(11, HIGH);
+  delay(20);
+  int highRead = digitalRead(12);
+  
+  Serial.print("Drive LOW  -> read "); Serial.print(lowRead);
+  Serial.print("   |   Drive HIGH -> read "); Serial.println(highRead);
+  
+  delay(500);
+}
